@@ -1,9 +1,3 @@
-<%-- 
-    Document   : book
-    Created on : Nov 25, 2016, 8:04:40 PM
-    Author     : Nuboih
---%>
-
 <%@page import = "java.sql.*" %>
 <% Class.forName("com.mysql.jdbc.Driver");%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -14,7 +8,8 @@
         <title>Book Page</title>
     </head>
     <body>
-        <%!
+        <%! // Create a Book class
+
             public class Book
             {
 
@@ -24,6 +19,7 @@
 
                 Connection connection = null;
                 PreparedStatement insertStatement = null;
+                PreparedStatement deleteStatement = null;
                 PreparedStatement viewStatement = null;
                 ResultSet resultSet = null;
 
@@ -35,6 +31,7 @@
                         insertStatement = connection.prepareStatement(
                                 "INSERT INTO Book (bookCode, title, publisherCode, type, paperback)"
                                 + " VALUES (?, ?, ?, ?, ?)");
+                        deleteStatement = connection.prepareStatement("DELETE FROM Book WHERE bookCode = ?");
                         viewStatement = connection.prepareStatement("SELECT * FROM Book");
                     }
                     catch (SQLException e)
@@ -76,6 +73,22 @@
 
                     return result;
                 }
+
+                public int deleteBook(String bookCode)
+                {
+                    int result = 0;
+
+                    try
+                    {
+                        deleteStatement.setString(1, bookCode);
+                        result = deleteStatement.executeUpdate();
+                    }
+                    catch (SQLException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    return result;
+                }
             }
         %>
 
@@ -115,7 +128,7 @@
             if (request.getParameter("submitData") != null)
             {
         %>
-        <form name="myForm" action="book.jsp" method="POST">
+        <form action="book.jsp" method="POST">
             <table border="0">
                 <tbody>
                     <tr>
@@ -180,6 +193,52 @@
             } // end of if statement for inserting book
         %>
 
+        <%// form = delete data, fill the form
+            if (request.getParameter("submitDelete") != null)
+            {
+                ResultSet books = book.getAllBooks();
+        %>
+        <form action="book.jsp" method="POST">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>(Delete)</th>
+                        <th>Book Code</th>
+                        <th>Title</th>
+                        <th>Publisher Code</th>
+                        <th>Type</th>
+                        <th>Paperback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% while (books.next())
+                        {%>
+                    <tr>
+                        <td><input type="checkbox" name="listBooks" value="<%= books.getString("bookCode")%>"></td>
+                        <td><%=books.getString("bookCode")%> </td>
+                        <td><%=books.getString("title")%></td>
+                        <td><%=books.getString("publisherCode")%></td>
+                        <td><%=books.getString("type")%></td>
+                        <td><%=books.getString("paperback")%> </td>
+                    </tr>
+                    <% } // end of while%>
+                </tbody>
+            </table>
+            <input type="submit" value="Submit" name="submitDeleteBook" />
+        </form>
+        <% } // end of if statement for filling the delete form%>
+
+        <% // button = submitDeleteAuthor, delete an author from the database
+            if (request.getParameter("submitDeleteBook") != null)
+            {
+                // values from the checkboxes
+                String[] bookCodes = request.getParameterValues("listBooks");
+                for (String bookCode : bookCodes)
+                {
+                    book.deleteBook(bookCode);
+                }
+            }
+        %>
+
     </body>
 </html>
-

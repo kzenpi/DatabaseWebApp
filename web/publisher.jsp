@@ -1,9 +1,3 @@
-<%-- 
-    Document   : publisher
-    Created on : Nov 25, 2016, 8:05:02 PM
-    Author     : Nuboih
---%>
-
 <%@page import = "java.sql.*" %>
 <% Class.forName("com.mysql.jdbc.Driver");%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -14,19 +8,20 @@
         <title>Publisher Page</title>
     </head>
     <body>
-        <%!
+        <%!            
             public class Publisher
             {
-
+                
                 String URL = "jdbc:mysql://localhost:3306/test";
                 String USERNAME = "root";
                 String PASSWORD = "1234";
-
+                
                 Connection connection = null;
                 PreparedStatement insertStatement = null;
+                PreparedStatement deleteStatement = null;
                 PreparedStatement viewStatement = null;
                 ResultSet resultSet = null;
-
+                
                 public Publisher()
                 {
                     try
@@ -35,6 +30,7 @@
                         insertStatement = connection.prepareStatement(
                                 "INSERT INTO Publisher (publisherCode, publisherName, city)"
                                 + " VALUES (?, ?, ?)");
+                        deleteStatement = connection.prepareStatement("DELETE FROM Publisher WHERE publisherCode = ?");
                         viewStatement = connection.prepareStatement("SELECT * FROM Publisher");
                     }
                     catch (SQLException e)
@@ -42,7 +38,7 @@
                         e.printStackTrace();
                     }
                 }
-
+                
                 public ResultSet getAllPublishers()
                 {
                     try
@@ -55,11 +51,11 @@
                     }
                     return resultSet;
                 }
-
+                
                 public int insertPublisher(String pubCode, String pubName, String city)
                 {
                     int result = 0;
-
+                    
                     try
                     {
                         insertStatement.setString(1, pubCode);
@@ -71,7 +67,23 @@
                     {
                         e.printStackTrace();
                     }
-
+                    
+                    return result;
+                }
+                
+                public int deletePublisher(String pubCode)
+                {
+                    int result = 0;
+                    
+                    try
+                    {
+                        deleteStatement.setString(1, pubCode);
+                        result = deleteStatement.executeUpdate();
+                    }
+                    catch (SQLException e)
+                    {
+                        e.printStackTrace();
+                    }
                     return result;
                 }
             }
@@ -109,7 +121,7 @@
             if (request.getParameter("submitData") != null)
             {
         %>
-        <form name="myForm" action="publisher.jsp" method="POST">
+        <form action="publisher.jsp" method="POST">
             <table border="0">
                 <tbody>
                     <tr>
@@ -138,7 +150,7 @@
                 String pubCode = new String();
                 String pubName = new String();
                 String city = new String();
-
+                
                 if (request.getParameter("formPubCode") != null)
                 {
                     pubCode = request.getParameter("formPubCode");
@@ -151,9 +163,53 @@
                 {
                     city = request.getParameter("formCity");
                 }
-
+                
                 result = publisher.insertPublisher(pubCode, pubName, city);
             } // end of if statement, for inserting publisher
-%>
+        %>
+
+        <%// form = delete data, fill the form
+            if (request.getParameter("submitDelete") != null)
+            {
+                ResultSet publishers = publisher.getAllPublishers();
+        %>
+        <form action="publisher.jsp" method="POST">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>(Delete)</th>
+                        <th>Publisher Code</th>
+                        <th>Publisher Name</th>
+                        <th>City</th>>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% while (publishers.next())
+                        {%>
+                    <tr>
+                        <td><input type="checkbox" name="listPublishers" value="<%= publishers.getString("publisherCode")%>"></td>
+                        <td><%=publishers.getString("publisherCode")%> </td>
+                        <td><%=publishers.getString("publisherName")%></td>
+                        <td><%=publishers.getString("city")%></td>
+                    </tr>
+                    <% } // end of while%>
+                </tbody>
+            </table>
+            <input type="submit" value="Submit" name="submitDeletePublisher" />
+        </form>
+        <% } // end of if statement for filling the delete form%>
+
+        <% // button = submitDeleteAuthor, delete an author from the database
+
+            if (request.getParameter("submitDeletePublisher") != null)
+            {
+                // values from the checkboxes
+                String[] pubCodes = request.getParameterValues("listPublishers");
+                for (String pubCode : pubCodes)
+                {
+                    publisher.deletePublisher(pubCode);
+                }
+            }
+        %> 
     </body>
 </html>

@@ -1,9 +1,3 @@
-<%-- 
-    Document   : copy
-    Created on : Nov 25, 2016, 8:04:54 PM
-    Author     : Nuboih
---%>
-
 <%@page import = "java.sql.*" %>
 <% Class.forName("com.mysql.jdbc.Driver");%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -24,6 +18,7 @@
 
                 Connection connection = null;
                 PreparedStatement insertStatement = null;
+                PreparedStatement deleteStatement = null;
                 PreparedStatement viewStatement = null;
                 ResultSet resultSet = null;
 
@@ -35,6 +30,10 @@
                         insertStatement = connection.prepareStatement(
                                 "INSERT INTO Copy (bookCode, branchNum, copyNum, quality, price)"
                                 + " VALUES (?, ?, ?, ?, ?)");
+                        deleteStatement = connection.prepareStatement("DELETE FROM Copy"
+                                + " WHERE bookCode = ?"
+                                + " AND branchNum = ?"
+                                + " AND copyNum = ?");
                         viewStatement = connection.prepareStatement("SELECT * FROM Copy");
                     }
                     catch (SQLException e)
@@ -74,6 +73,24 @@
                         e.printStackTrace();
                     }
 
+                    return result;
+                }
+
+                public int deleteCopy(String bookCode, int branchNum, int copyNum)
+                {
+                    int result = 0;
+
+                    try
+                    {
+                        deleteStatement.setString(1, bookCode);
+                        deleteStatement.setInt(2, branchNum);
+                        deleteStatement.setInt(3, copyNum);
+                        result = deleteStatement.executeUpdate();
+                    }
+                    catch (SQLException e)
+                    {
+                        e.printStackTrace();
+                    }
                     return result;
                 }
             }
@@ -116,7 +133,7 @@
             if (request.getParameter("submitData") != null)
             {
         %>
-        <form name="myForm" action="copy.jsp" method="POST">
+        <form action="copy.jsp" method="POST">
             <table border="0">
                 <tbody>
                     <tr>
@@ -180,5 +197,53 @@
             } // end of if statement, for inserting publisher
         %>
 
+        <%// form = delete data, fill the form
+            if (request.getParameter("submitDelete") != null)
+            {
+                ResultSet copies = copy.getAllCopies();
+        %>
+        <form action="copy.jsp" method="POST">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>(Delete)</th>
+                        <th>Book Code</th>
+                        <th>Branch Number</th>
+                        <th># of Copies</th>
+                        <th>Quality</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% while (copies.next())
+                        {%>
+                    <tr>
+                        <td><input type="checkbox" name="listCopies" value="<%= copies.getString("bookCode")%>,<%= copies.getInt("branchNum")%>,<%= copies.getInt("copyNum")%>"></td>
+                        <td><%= copies.getString("bookCode")%> </td>
+                        <td><%= copies.getInt("branchNum")%> </td>
+                        <td><%= copies.getInt("copyNum")%> </td>
+                        <td><%= copies.getString("quality")%> </td>
+                        <td><%= copies.getDouble("price")%> </td>
+                    </tr>
+                    <% } // end of while%>
+                </tbody>
+            </table>
+            <input type="submit" value="Submit" name="submitDeleteCopy" />
+        </form>
+        <% } // end of if statement for filling the delete form%>
+
+        <% // button = submitDeleteCopy, delete a key from the database
+
+            if (request.getParameter("submitDeleteCopy") != null)
+            {
+                // values from the checkboxes
+                String[] keysOfCopies = request.getParameterValues("listCopies");
+                for (String keysCopy : keysOfCopies)
+                {
+                    String[] tokens = keysCopy.split(",");
+                    copy.deleteCopy(tokens[0], Integer.parseInt(tokens[1]), Integer.parseInt(tokens[2]));
+                }
+            }
+        %> 
     </body>
 </html>

@@ -1,9 +1,3 @@
-<%-- 
-    Document   : author
-    Created on : Nov 25, 2016, 8:04:30 PM
-    Author     : Nuboih
---%>
-
 <%@page import = "java.sql.*" %>
 <% Class.forName("com.mysql.jdbc.Driver");%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -25,6 +19,7 @@
 
                 Connection connection = null;
                 PreparedStatement insertStatement = null;
+                PreparedStatement deleteStatement = null;
                 PreparedStatement viewStatement = null;
                 ResultSet resultSet = null;
 
@@ -36,6 +31,7 @@
                         insertStatement = connection.prepareStatement(
                                 "INSERT INTO Author (authorNum, authorLast, authorFirst)"
                                 + " VALUES (?, ?, ?)");
+                        deleteStatement = connection.prepareStatement("DELETE FROM Author WHERE authorNum = ?");
                         viewStatement = connection.prepareStatement("SELECT * FROM Author");
                     }
                     catch (SQLException e)
@@ -75,6 +71,22 @@
 
                     return result;
                 }
+
+                public int deleteAuthor(int authorNum)
+                {
+                    int result = 0;
+
+                    try
+                    {
+                        deleteStatement.setInt(1, authorNum);
+                        result = deleteStatement.executeUpdate();
+                    }
+                    catch (SQLException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    return result;
+                }
             }
         %>
 
@@ -110,7 +122,7 @@
             if (request.getParameter("submitData") != null)
             {
         %>
-        <form name="myForm" action="author.jsp" method="POST">
+        <form action="author.jsp" method="POST">
             <table border="0">
                 <tbody>
                     <tr>
@@ -132,7 +144,7 @@
         </form>
         <% } // end of if statement for filling the form%>
 
-        <% // submit author
+        <% // submit author button, insert an author into the database
             if (request.getParameter("submitAuthor") != null)
             {
                 int result = 0;
@@ -155,6 +167,49 @@
 
                 result = author.insertAuthor(authorNumber, lastName, firstName);
             } // end of if statement for inserting the author
+        %>
+
+        <%// form = delete data, fill the form
+            if (request.getParameter("submitDelete") != null)
+            {
+                ResultSet authors = author.getAllAuthors();
+        %>
+        <form action="author.jsp" method="POST">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>(Delete)</th>
+                        <th>Author Number</th>
+                        <th>Last Name</th>
+                        <th>First name</th>>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% while (authors.next())
+                        {%>
+                    <tr>
+                        <td><input type="checkbox" name="listAuthors" value="<%= authors.getInt("authorNum")%>"></td>
+                        <td><%=authors.getString("authorLast")%> </td>
+                        <td><%=authors.getString("authorFirst")%></td>
+                    </tr>
+                    <% } // end of while%>
+                </tbody>
+            </table>
+            <input type="submit" value="Submit" name="submitDeleteAuthor" />
+        </form>
+        <% } // end of if statement for filling the delete form%>
+
+        <% // button = submitDeleteAuthor, delete an author from the database
+
+            if (request.getParameter("submitDeleteAuthor") != null)
+            {
+                // values from the checkboxes
+                String[] authorNums = request.getParameterValues("listAuthors");
+                for (String authorNum : authorNums)
+                {
+                    author.deleteAuthor(Integer.parseInt(authorNum));
+                }
+            }
         %>
 
     </body>

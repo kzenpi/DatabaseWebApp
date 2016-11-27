@@ -24,6 +24,23 @@
             <input type="submit" name="submitData" value="Submit" />
         </form>
 
+        <h1>Delete</h1>
+        <form method="get" name="deleteData" action="this_value_should_change">
+            <fieldset>
+                <input type="radio" id="deleteAuthor" name="deleteData" onclick="document.deleteData.action = 'author.jsp';" />
+                <label for="deleteAuthor">Author</label>
+                <input type="radio" id="deleteBook" name="deleteData" onclick="document.deleteData.action = 'book.jsp';" />
+                <label for="deleteBook">Book</label>
+            </fieldset>
+            <fieldset>
+                <input type="radio" id="deletePublisher" name="deleteData" onclick="document.deleteData.action = 'publisher.jsp';" />
+                <label for="deletePublisher">Publisher</label>
+                <input type="radio" id="deleteCopy" name="deleteData" onclick="document.deleteData.action = 'copy.jsp';" />
+                <label for="deleteCopy">Copy</label>
+            </fieldset>
+            <input type="submit" name="submitDelete" value="Submit" />
+        </form>
+
         <h1>View All!</h1>
         <form method="get" name="viewAll" action="this_value_should_change">
             <fieldset>

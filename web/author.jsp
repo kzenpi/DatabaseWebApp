@@ -15,6 +15,7 @@
     </head>
     <body>
         <%! // Create an Author class
+
             public class Author
             {
 
@@ -23,8 +24,8 @@
                 String PASSWORD = "1234";
 
                 Connection connection = null;
-                Statement statement = null;
-
+                PreparedStatement insertStatement = null;
+                PreparedStatement viewStatement = null;
                 ResultSet resultSet = null;
 
                 public Author()
@@ -32,7 +33,10 @@
                     try
                     {
                         connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                        statement = connection.createStatement();
+                        insertStatement = connection.prepareStatement(
+                                "INSERT INTO Author (authorNum, authorLast, authorFirst)"
+                                + " VALUES (?, ?, ?)");
+                        viewStatement = connection.prepareStatement("SELECT * FROM Author");
                     }
                     catch (SQLException e)
                     {
@@ -44,13 +48,32 @@
                 {
                     try
                     {
-                        resultSet = statement.executeQuery("SELECT * FROM Author");
+                        resultSet = viewStatement.executeQuery();
                     }
                     catch (SQLException e)
                     {
                         e.printStackTrace();
                     }
                     return resultSet;
+                }
+
+                public int insertAuthor(int num, String last, String first)
+                {
+                    int result = 0;
+
+                    try
+                    {
+                        insertStatement.setInt(1, num);
+                        insertStatement.setString(2, last);
+                        insertStatement.setString(3, first);
+                        result = insertStatement.executeUpdate();
+                    }
+                    catch (SQLException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    return result;
                 }
             }
         %>
@@ -72,7 +95,7 @@
                 </tr>
 
                 <% while (authors.next())
-                                {%>
+                    {%>
                 <tr>
                     <td><%= authors.getInt("authorNum")%></td>
                     <td><%= authors.getString("authorLast")%></td>
@@ -82,5 +105,57 @@
             </tbody>
         </table>
         <% }%>
+
+        <%// if the submit form is subit data
+            if (request.getParameter("submitData") != null)
+            {
+        %>
+        <form name="myForm" action="author.jsp" method="POST">
+            <table border="0">
+                <tbody>
+                    <tr>
+                        <td>Author Number : </td>
+                        <td><input type="text" name="num" value="" size="50" /></td>
+                    </tr>
+                    <tr>
+                        <td>Last Name : </td>
+                        <td><input type="text" name="last" value="" size="50" /></td>
+                    </tr>
+                    <tr>
+                        <td>First Name : </td>
+                        <td><input type="text" name="first" value="" size="50" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="reset" value="Clear" name="clear" />
+            <input type="submit" value="Submit" name="submitAuthor" />
+        </form>
+        <% }%>
+
+        <% // submit author
+            if (request.getParameter("submitAuthor") != null)
+            {
+                int result = 0;
+                int authorNumber = 0;
+                String firstName = new String();
+                String lastName = new String();
+
+                if (request.getParameter("num") != null)
+                {
+                    authorNumber = Integer.parseInt(request.getParameter("num"));
+                }
+                if (request.getParameter("last") != null)
+                {
+                    lastName = request.getParameter("last");
+                }
+                if (request.getParameter("first") != null)
+                {
+                    firstName = request.getParameter("first");
+                }
+
+                result = author.insertAuthor(authorNumber, lastName, firstName);
+            }
+        %>
+
     </body>
 </html>

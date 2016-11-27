@@ -23,7 +23,8 @@
                 String PASSWORD = "1234";
 
                 Connection connection = null;
-                Statement statement = null;
+                PreparedStatement insertStatement = null;
+                PreparedStatement viewStatement = null;
                 ResultSet resultSet = null;
 
                 public Book()
@@ -31,7 +32,10 @@
                     try
                     {
                         connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                        statement = connection.createStatement();
+                        insertStatement = connection.prepareStatement(
+                                "INSERT INTO Book (bookCode, title, publisherCode, type, paperback)"
+                                + " VALUES (?, ?, ?, ?, ?)");
+                        viewStatement = connection.prepareStatement("SELECT * FROM Book");
                     }
                     catch (SQLException e)
                     {
@@ -43,7 +47,7 @@
                 {
                     try
                     {
-                        resultSet = statement.executeQuery("SELECT * FROM Book");
+                        resultSet = viewStatement.executeQuery();
                     }
                     catch (SQLException e)
                     {
@@ -51,14 +55,38 @@
                     }
                     return resultSet;
                 }
+
+                public int insertBook(String bookCode, String title, String pubCode, String type, String paperback)
+                {
+                    int result = 0;
+
+                    try
+                    {
+                        insertStatement.setString(1, bookCode);
+                        insertStatement.setString(2, title);
+                        insertStatement.setString(3, pubCode);
+                        insertStatement.setString(4, type);
+                        insertStatement.setString(5, paperback);
+                        result = insertStatement.executeUpdate();
+                    }
+                    catch (SQLException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    return result;
+                }
             }
         %>
 
         <%
             Book book = new Book();
-            ResultSet books = book.getAllBooks();
         %>
 
+        <% // if the submit form is viewAll
+            if (request.getParameter("submitViewAll") != null)
+            {
+                ResultSet books = book.getAllBooks();%>
         <table border="1">
             <tbody>
                 <tr>
@@ -81,6 +109,77 @@
                 <% };%>
             </tbody>
         </table>
+        <% } // end of if statement for view all books%>
+
+        <%// if the submit form is subit data, fill the form
+            if (request.getParameter("submitData") != null)
+            {
+        %>
+        <form name="myForm" action="book.jsp" method="POST">
+            <table border="0">
+                <tbody>
+                    <tr>
+                        <td>Book Code : </td>
+                        <td><input type="text" name="formBookCode" value="" size="50" /></td>
+                    </tr>
+                    <tr>
+                        <td>Title : </td>
+                        <td><input type="text" name="formTitle" value="" size="50" /></td>
+                    </tr>
+                    <tr>
+                        <td>Publisher Code: </td>
+                        <td><input type="text" name="formPubCode" value="" size="50" /></td>
+                    </tr>
+                    <tr>
+                        <td>Type : </td>
+                        <td><input type="text" name="formType" value="" size="50" /></td>
+                    </tr>
+                    <tr>
+                        <td>Paperback : </td>
+                        <td><input type="text" name="formPaperback" value="" size="50" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="reset" value="Clear" name="clear" />
+            <input type="submit" value="Submit" name="submitBook" />
+        </form>
+        <% } // end of if statement for filling the form%>
+
+        <% // insert book if the Submit button is submitBook
+            if (request.getParameter("submitBook") != null)
+            {
+                int result = 0;
+                String bookCode = new String();
+                String title = new String();
+                String pubCode = new String();
+                String type = new String();
+                String paperback = new String();
+
+                if (request.getParameter("formBookCode") != null)
+                {
+                    bookCode = request.getParameter("formBookCode");
+                }
+                if (request.getParameter("formTitle") != null)
+                {
+                    title = request.getParameter("formTitle");
+                }
+                if (request.getParameter("formPubCode") != null)
+                {
+                    pubCode = request.getParameter("formPubCode");
+                }
+                if (request.getParameter("formType") != null)
+                {
+                    type = request.getParameter("formType");
+                }
+                if (request.getParameter("formPaperback") != null)
+                {
+                    paperback = request.getParameter("formPaperback");
+                }
+
+                result = book.insertBook(bookCode, title, pubCode, type, paperback);
+            } // end of if statement for inserting book
+        %>
+
     </body>
 </html>
 

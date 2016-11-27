@@ -106,7 +106,7 @@
         </table>
         <% }%>
 
-        <%// if the submit form is subit data
+        <%// if the submit form is subit data, fill the form
             if (request.getParameter("submitData") != null)
             {
         %>
@@ -130,7 +130,7 @@
             <input type="reset" value="Clear" name="clear" />
             <input type="submit" value="Submit" name="submitAuthor" />
         </form>
-        <% }%>
+        <% } // end of if statement for filling the form%>
 
         <% // submit author
             if (request.getParameter("submitAuthor") != null)
@@ -154,7 +154,7 @@
                 }
 
                 result = author.insertAuthor(authorNumber, lastName, firstName);
-            }
+            } // end of if statement for inserting the author
         %>
 
     </body>

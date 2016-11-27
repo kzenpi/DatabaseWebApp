@@ -23,7 +23,7 @@
                 String PASSWORD = "1234";
 
                 Connection connection = null;
-                Statement statement = null;
+                PreparedStatement viewStatement = null;
                 ResultSet resultSet = null;
 
                 public Branch()
@@ -31,7 +31,7 @@
                     try
                     {
                         connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                        statement = connection.createStatement();
+                        viewStatement = connection.prepareStatement("SELECT * FROM Branch");
                     }
                     catch (SQLException e)
                     {
@@ -43,7 +43,7 @@
                 {
                     try
                     {
-                        resultSet = statement.executeQuery("SELECT * FROM Branch");
+                        resultSet = viewStatement.executeQuery();
                     }
                     catch (SQLException e)
                     {

@@ -16,7 +16,7 @@
                 <label for="addBook">Book</label>
             </fieldset>
             <fieldset>
-                <input type="radio" id="addPublisher" name="addData" onclick="document.addData.action = 'branch.jsp';" />
+                <input type="radio" id="addPublisher" name="addData" onclick="document.addData.action = 'publisher.jsp';" />
                 <label for="addPublisher">Publisher</label>
                 <input type="radio" id="addCopy" name="addData" onclick="document.addData.action = 'copy.jsp';" />
                 <label for="addCopy">Copy</label>
